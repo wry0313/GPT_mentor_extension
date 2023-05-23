@@ -14,9 +14,9 @@ async function request(token, method, path, data = undefined) {
   });
 }
 
-async function fetchSSE(
-  resource, options
-)
+// async function fetchSSE(
+//   resource, options
+// )
 
 export async function getChatGPTAccessToken() {
   if (cache.get(KEY_ACCESS_TOKEN)) {
