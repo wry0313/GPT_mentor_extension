@@ -1,4 +1,5 @@
-const ExpiryMap = require('expiry-map');
+import ExpiryMap from 'expiry-map'
+import { v4 as uuidv4 } from 'uuid'
 
 const cache = new ExpiryMap(10*1000);
 const KEY_ACCESS_TOKEN = 'accessToken';
@@ -68,7 +69,7 @@ export class ChatGPTProvider {
         action: 'next',
         messages: [
           {
-            id: "aaa2511b-7914-421d-bf0d-c4d977e3a337",
+            id: uuidv4(),
             author: {role: 'user'},
             content: {
               content_type: 'text',
@@ -77,7 +78,7 @@ export class ChatGPTProvider {
           },
         ],
         model: modelName,
-        parent_message_id: "e6e170be-5a4a-411d-863e-3e48ebd7d2d7",
+        parent_message_id: uuidv4(),
       }),
     });
     console.debug(response);
@@ -85,7 +86,7 @@ export class ChatGPTProvider {
     if (response.ok) {
       const responseBody = await response.text();
       console.log(responseBody)
-      console.log()
+      processData(responseBody);
     } else {
       const errorText = await response.text();
       console.log('Request failed:', response.status);
@@ -93,3 +94,26 @@ export class ChatGPTProvider {
     }    
   }
 }
+
+function processData(data) {
+  let lines = data.split('\n');
+  // console.log(lines);
+  while (!lines.pop().includes('DONE')) {
+    lines.pop();
+    // console.log("pop")
+  }
+  const lastLine = lines[lines.length - 2];
+  // console.log(lastLine);
+  // console.log("hello")
+  
+  let lastData;
+  try {
+    lastData = JSON.parse(lastLine.replace('data: ', ''));
+    console.log(lastData.message.content.parts[0]);
+  } catch (err) {
+    console.error(err);
+    return;
+  }
+  
+}
+

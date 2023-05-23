@@ -11,7 +11,8 @@
   "license": "ISC",
   "dependencies": {
     "babel-loader": "^9.1.2",
-    "expiry-map": "^2.0.0"
+    "expiry-map": "^2.0.0",
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "build": "^0.1.4",

@@ -10,7 +10,7 @@ async function testCode() {
   try {
     const token = await getChatGPTAccessToken();
     const provider = new ChatGPTProvider(token);
-    provider.generateAnswer("just say ok")
+    provider.generateAnswer("write a code that can solve floodfill")
   } catch (error) {
     console.log('Error:', error);
   }
