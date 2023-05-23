@@ -1,25 +1,41 @@
+import { ChatGPTProvider, getChatGPTAccessToken, sendMessageFeedback } from './chatgpt'
+
 let lastTitle = null;
 let startTime = null;
 const timeTracker = new Map();
 
-import { ChatGPTProvider, getChatGPTAccessToken } from './chatgpt.js';
+async function generateAnswers (question) { 
+  const token = await getChatGPTAccessToken()
+  const provider = new ChatGPTProvider(token)
+  const controller = new AbortController()
 
-console.log("hello this is background.js");
-
-async function testCode() {
-  try {
-    const token = await getChatGPTAccessToken();
-    const provider = new ChatGPTProvider(token);
-    provider.generateAnswer("write a code that can solve floodfill")
-  } catch (error) {
-    console.log('Error:', error);
-  }
+  // port.onDisconnect.addListener(() => {
+  //   controller.abort()
+  //   cleanup?.()
+  // })
+  const { cleanup } = await provider.generateAnswer({
+    prompt: question,
+    signal: controller.signal,
+    onEvent(event) {
+      if (event.type === 'done') {
+        // port.postMessage({ event: 'DONE' })
+        return
+      }
+      // port.postMessage(event.data);
+      console.log(event.data.text)
+    },
+  })
 }
-testCode();
+
+console.log("background.js running");
+generateAnswers("how to use amazon?");
+
+
+
 
 function handleActiveTabChange() {
   // Query the currently active tab
-  chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
     // Access the active tab object
     var activeTab = tabs[0];
 
@@ -57,7 +73,7 @@ function handleActiveTabChange() {
 chrome.tabs.onActivated.addListener(handleActiveTabChange);
 
 // Event listener for tab title update
-chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
+chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
   if (changeInfo.title) {
     // If the tab title is updated, call the handleActiveTabChange function
     handleActiveTabChange();
@@ -95,7 +111,7 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
   if (message.action === 'print') {
     // Call the printMap function here
     printMap(timeTracker); // Replace `timeTracker` with your actual map variable
-  } 
+  }
   if (message.action === 'clean') {
     cleanMap(timeTracker, message.minTime)
   }

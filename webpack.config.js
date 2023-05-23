@@ -1,5 +1,4 @@
 const path = require('path');
-// const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
 
 module.exports = {
@@ -14,16 +13,20 @@ module.exports = {
     clean: true,
   },
   resolve: {
-    extensions: ['.js'], // Add any other extensions you're using in your extension code
+    extensions: ['.tsx', '.ts', '.js'],
   },
   module: {
     rules: [
-      // Add any additional rules for handling different file types (e.g., CSS, JSON)
       {
-        test: /\.js$/,
+        test: /\.(js|ts)x?$/,
+        use: ['babel-loader'],
         exclude: /node_modules/,
-        use: 'babel-loader', // If you need to transpile your code using Babel, install babel-loader and configure it here
       },
+      {
+        test: /\.tsx?$/,
+        use: 'ts-loader',
+        exclude: /node_modules/,
+      }
     ],
   },
   plugins: [

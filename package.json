@@ -11,15 +11,21 @@
   "license": "ISC",
   "dependencies": {
     "babel-loader": "^9.1.2",
+    "eventsource-parser": "^1.0.0",
     "expiry-map": "^2.0.0",
+    "lodash-es": "^4.17.21",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
+    "@types/lodash-es": "^4.17.7",
+    "@types/uuid": "^9.0.1",
     "build": "^0.1.4",
     "copy-webpack-plugin": "^11.0.0",
     "html-webpack-plugin": "^5.5.1",
     "npm": "^9.6.7",
     "run": "^1.4.0",
+    "ts-loader": "^9.4.2",
+    "typescript": "^5.0.4",
     "webpack": "^5.83.1",
     "webpack-cli": "^5.1.1",
     "webpack-merge": "^5.9.0"
