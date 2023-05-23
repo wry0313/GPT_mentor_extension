@@ -28,10 +28,7 @@ async function generateAnswers (question) {
 }
 
 console.log("background.js running");
-generateAnswers("how to use amazon?");
-
-
-
+// generateAnswers("hi?");
 
 function handleActiveTabChange() {
   // Query the currently active tab
@@ -96,6 +93,15 @@ function printMap(map) {
   });
 }
 
+function toString(map) {
+  const arr = [];
+  map.forEach((value, key) => {
+    arr.push(key + " used for " + value + " seconds");
+  });
+  return arr.join(', ');
+}
+
+
 function cleanMap(timeTracker, minTime) {
   for (let [key, value] of timeTracker) {
     if (value < minTime) {
@@ -110,7 +116,11 @@ function cleanMap(timeTracker, minTime) {
 chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
   if (message.action === 'print') {
     // Call the printMap function here
-    printMap(timeTracker); // Replace `timeTracker` with your actual map variable
+    printMap(timeTracker);
+    const str = toString(timeTracker);
+    console.log("str: ",str);
+    const instruction = "in the perspective of a mentor or guru to allow the user to understand what the user's focus is on and what the user roughly accomplished today make sure to NOT include the seconds of usage but instead just use the seconds for your own reference to the user's focus. limit to 100-200 words and make necessary suggestions on what to do to make user improve: ";
+    generateAnswers(instruction + str);
   }
   if (message.action === 'clean') {
     cleanMap(timeTracker, message.minTime)
