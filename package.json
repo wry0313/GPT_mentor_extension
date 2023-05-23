@@ -1,0 +1,26 @@
+{
+  "name": "chatgpt-extension-daily-summery",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "webpack --watch --config webpack.dev.js",
+    "build": "webpack --config webpack.prod.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "babel-loader": "^9.1.2",
+    "expiry-map": "^2.0.0"
+  },
+  "devDependencies": {
+    "build": "^0.1.4",
+    "copy-webpack-plugin": "^11.0.0",
+    "html-webpack-plugin": "^5.5.1",
+    "npm": "^9.6.7",
+    "run": "^1.4.0",
+    "webpack": "^5.83.1",
+    "webpack-cli": "^5.1.1",
+    "webpack-merge": "^5.9.0"
+  }
+}

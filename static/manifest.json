@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "Activity Tracker",
+  "description": "A Google Chrome extension that tracks user activity and generates daily reports",
+  "version": "1.0",
+  "permissions": [
+    "tabs"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "host_permissions": ["https://*.openai.com/"],
+  "action": {
+    "default_icon": {
+      "16": "icons/icon.png",
+      "48": "icons/icon.png",
+      "128": "icons/icon.png"
+    },
+    "default_popup": "popup.html"
+  },
+  "icons": {
+    "16": "icons/icon.png",
+    "48": "icons/icon.png",
+    "128": "icons/icon.png"
+  }
+}
