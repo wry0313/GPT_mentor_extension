@@ -113,11 +113,11 @@ function toString(map) {
 }
 
 
-function cleanMap(timeTracker, minTime) {
-  for (let [key, value] of timeTracker) {
+function cleanMap(map, minTime) {
+  map.forEach((value, key) => {
     if (value < minTime) {
       timeTracker.delete(key);
     }
-  }
+  });
 }
 
