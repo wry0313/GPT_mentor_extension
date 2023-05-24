@@ -18,7 +18,7 @@ function Popup() {
   };
 
     return (
-    <div className="my-2 w-96 flex flex-col items-center justify-center h-screen bg-gray-100">
+    <div className="w-96 flex flex-col items-center justify-center h-screen bg-gray-100">
       <h1 className="text-6xl font-bold text-center text-blue-500 mb-10">
         <span className="text-cyan-500">Daily</span> <span className="text-blue-500">Guru</span>
       </h1>
