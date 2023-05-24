@@ -1,4 +1,5 @@
 import { generateAnswers } from './background'
+import '../static/popup.css';
 
 const port = chrome.runtime.connect();
 
