@@ -4,25 +4,29 @@ const tailwindcss = require('tailwindcss');
 const autoprefixer = require('autoprefixer');
 
 module.exports = {
-//   mode: 'production', 
   entry: {
-    popup: './src/popup.js',
+    popup: './src/popup.jsx',
     background: './src/background.js',
-  }, 
+  },
   output: {
     path: path.resolve(__dirname, 'dist'), // path for build
     filename: '[name].js', // Update with the desired output file location
     clean: true,
   },
   resolve: {
-    extensions: ['.tsx', '.ts', '.js'],
+    extensions: ['.tsx', '.ts', '.js', 'jsx'],
   },
   module: {
     rules: [
       {
         test: /\.(js|ts)x?$/,
-        use: ['babel-loader', 'ts-loader'],
         exclude: /node_modules/,
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ['@babel/preset-env', '@babel/preset-typescript', '@babel/preset-react'],
+          }
+        },
       },
       {
         test: /\.css$/i,
@@ -40,9 +44,9 @@ module.exports = {
   },
   plugins: [
     new CopyPlugin({
-        patterns: [
-            { from: "static" }
-        ]
+      patterns: [
+        { from: "static" }
+      ]
     })
   ],
 };
