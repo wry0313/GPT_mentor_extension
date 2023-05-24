@@ -1,4 +1,4 @@
-import { ChatGPTProvider, getChatGPTAccessToken, sendMessageFeedback } from './chatgpt'
+import { ChatGPTProvider, getChatGPTAccessToken } from './chatgpt'
 console.debug("background.js running");
 
 let lastTitle = null;
@@ -40,7 +40,7 @@ chrome.runtime.onConnect.addListener((port) => {
     else if (msg.action === 'generate') {
       const str = toString(timeTracker);
       console.debug("toString TimeTracker: ", str);
-      const instruction = "in the perspective of a mentor or guru to allow the user to understand what the user's focus is on and what the user roughly accomplished today. limit to 100-200 words and make necessary suggestions on what to do to make user improve: ";
+      const instruction = "in the perspective of a mentor or guru to allow the user to understand what the user's focus is on and what the user roughly accomplished today. limit to 100-200 words and make necessary suggestions on what to do to make user improve and also give a productivity rating out of 100: ";
       try {
         await generateAnswers(port, instruction + str)
       } catch (err) {
@@ -99,7 +99,7 @@ function toString(map) {
     arr.push(key + " used for " + value + " seconds");
   });
   if (arr.length) {
-    return arr.join(', ');
+    return arr.join('\n');
   } else {
     return "no tab recorded";
   }

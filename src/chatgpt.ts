@@ -43,6 +43,7 @@ export async function getChatGPTAccessToken(): Promise<string> {
     throw new Error('UNAUTHORIZED')
   }
   cache.set(KEY_ACCESS_TOKEN, data.accessToken)
+
   return data.accessToken
 }
 
@@ -113,7 +114,7 @@ export class ChatGPTProvider implements Provider {
         try {
           data = JSON.parse(message)
         } catch (err) {
-          console.error(err)
+          console.log("ERROR:", err);
           return
         }
         const text = data.message?.content?.parts?.[0]

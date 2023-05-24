@@ -1,9 +1,20 @@
-import { generateAnswers } from './background'
+import { getChatGPTAccessToken } from './background'
 import '../static/tailwind.css'
 
 const port = chrome.runtime.connect();
 
-document.addEventListener('DOMContentLoaded', function () {
+console.log("hello")
+
+document.addEventListener('DOMContentLoaded', async function () {
+  // try{
+  //   console.debug("hi", await getChatGPTAccessToken());
+  // } catch(e) {
+  //   if (e.message = 'UNATHORIZED') {
+  //       // const errorMessage = document.createElement('p');
+  //       // errorMessage.textContent = 'Hi! Unauthorized access. Please authorize by visiting chat.openai.com.';
+  //       // document.body.appendChild(errorMessage);
+  //   }
+  // }
   const printButton = document.getElementById('printButton');
   const cleanButton = document.getElementById('cleanButton');
   const generateButton = document.getElementById('generateButton');
@@ -27,7 +38,19 @@ document.addEventListener('DOMContentLoaded', function () {
 port.onMessage.addListener(function (msg) {
   if (msg.action === 'printPopup') {
     if (messageContainer && msg.text) {
-      messageContainer.textContent = msg.text;
+      messageContainer.innerHTML = '';
+      const lines = msg.text.split('\n'); 
+      lines.forEach(line => {
+        if (line.trim() !== '') {
+          const listItem = document.createElement('li'); // Create <li> element
+          listItem.textContent = line; // Set the line text as the content of the <li>
+          messageContainer.appendChild(listItem); // Append the <li> to the container
+        } else {
+          const lineBreak = document.createElement('br'); // Create <br> element
+          messageContainer.appendChild(lineBreak); // Append the <br> to the container
+        }
+      });
+      
     }
   }
 })
