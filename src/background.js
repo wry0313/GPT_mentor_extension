@@ -1,34 +1,57 @@
 import { ChatGPTProvider, getChatGPTAccessToken, sendMessageFeedback } from './chatgpt'
+console.debug("background.js running");
 
 let lastTitle = null;
 let startTime = null;
 const timeTracker = new Map();
 
-async function generateAnswers (question) { 
+
+export async function generateAnswers(port, question) {
   const token = await getChatGPTAccessToken()
   const provider = new ChatGPTProvider(token)
   const controller = new AbortController()
 
-  // port.onDisconnect.addListener(() => {
-  //   controller.abort()
-  //   cleanup?.()
-  // })
   const { cleanup } = await provider.generateAnswer({
     prompt: question,
     signal: controller.signal,
     onEvent(event) {
       if (event.type === 'done') {
-        // port.postMessage({ event: 'DONE' })
+        port.postMessage({ event: 'DONE' })
         return
       }
-      // port.postMessage(event.data);
-      console.log(event.data.text)
+      port.postMessage({ action: 'printPopup', text: event.data.text });
+      // console.debug("debug", event.data.text)
     },
+  })
+  port.onDisconnect.addListener(() => {
+    controller.abort()
+   cleanup?.();
   })
 }
 
-console.log("background.js running");
-// generateAnswers("hi?");
+chrome.runtime.onConnect.addListener((port) => {
+  port.onMessage.addListener(async (msg) => {
+    console.debug('background received msg', msg)
+    if (msg.action === 'printMap') {
+      // Call the printMap function here
+      printMap(timeTracker);
+      port.postMessage({ action: 'printPopup', text: toString(timeTracker) });
+    }
+    else if (msg.action === 'generate') {
+      const str = toString(timeTracker);
+      console.debug("toString TimeTracker: ", str);
+      const instruction = "in the perspective of a mentor or guru to allow the user to understand what the user's focus is on and what the user roughly accomplished today make sure to NOT include the seconds of usage but instead just use the seconds for your own reference to the user's focus. limit to 100-200 words and make necessary suggestions on what to do to make user improve: ";
+      try {
+        await generateAnswers(port, instruction + str)
+      } catch (err) {
+        console.log("ERROR: ", err);
+      }
+    }
+    else if (msg.action === 'cleanTimeTracker') {
+      cleanMap(timeTracker, msg.minTime)
+    }
+  });
+});
 
 function handleActiveTabChange() {
   // Query the currently active tab
@@ -52,12 +75,10 @@ function handleActiveTabChange() {
         // update the total time by adding the elapsed time
         const totalTime = timeTracker.get(lastTitle) + elapsedTime;
         timeTracker.set(lastTitle, totalTime);
-        // console.log(lastTitle, totalTime);
       } else {
         // If the previous tab title is not in the timeTracker map,
         // create a new entry with the elapsed time
         timeTracker.set(lastTitle, elapsedTime);
-        // console.log(lastTitle, elapsedTime);
       }
       // Update the lastTitle and startTime for the new tab
       lastTitle = tabTitle;
@@ -77,19 +98,9 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
   }
 });
 
-function extractHostname(url) {
-  try {
-    const parsedUrl = new URL(url);
-    return parsedUrl.hostname;
-  } catch (error) {
-    console.error('Invalid URL:', error);
-    return null;
-  }
-}
-
 function printMap(map) {
   map.forEach((value, key) => {
-    console.log(key + ' => ' + value);
+    console.debug(key + ' => ' + value);
   });
 }
 
@@ -110,19 +121,3 @@ function cleanMap(timeTracker, minTime) {
   }
 }
 
-// Add event listener to the button
-
-// Add message listener in background.js
-chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
-  if (message.action === 'print') {
-    // Call the printMap function here
-    printMap(timeTracker);
-    const str = toString(timeTracker);
-    console.log("str: ",str);
-    const instruction = "in the perspective of a mentor or guru to allow the user to understand what the user's focus is on and what the user roughly accomplished today make sure to NOT include the seconds of usage but instead just use the seconds for your own reference to the user's focus. limit to 100-200 words and make necessary suggestions on what to do to make user improve: ";
-    generateAnswers(instruction + str);
-  }
-  if (message.action === 'clean') {
-    cleanMap(timeTracker, message.minTime)
-  }
-});
