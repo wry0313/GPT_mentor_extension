@@ -48,7 +48,8 @@ chrome.runtime.onConnect.addListener((port) => {
       }
     }
     else if (msg.action === 'cleanTimeTracker') {
-      cleanMap(timeTracker, msg.minTime)
+      let count = cleanMap(timeTracker, msg.minTime)
+      port.postMessage({ action: 'printPopup', text: "map cleaned " + count + " items" });
     }
   });
 });
@@ -109,15 +110,23 @@ function toString(map) {
   map.forEach((value, key) => {
     arr.push(key + " used for " + value + " seconds");
   });
-  return arr.join(', ');
+  if (arr.length) {
+    return arr.join(', ');
+  } else {
+    return "no tab recorded";
+  }
+  
 }
 
 
 function cleanMap(map, minTime) {
+  let count = 0;
   map.forEach((value, key) => {
     if (value < minTime) {
       timeTracker.delete(key);
+      count += 1;
     }
   });
+  return count;
 }
 
