@@ -40,7 +40,7 @@ chrome.runtime.onConnect.addListener((port) => {
     else if (msg.action === 'generate') {
       const str = toString(timeTracker);
       console.debug("toString TimeTracker: ", str);
-      const instruction = "in the perspective of a mentor or guru to allow the user to understand what the user's focus is on and what the user roughly accomplished today make sure to NOT include the seconds of usage but instead just use the seconds for your own reference to the user's focus. limit to 100-200 words and make necessary suggestions on what to do to make user improve: ";
+      const instruction = "in the perspective of a mentor or guru to allow the user to understand what the user's focus is on and what the user roughly accomplished today. limit to 100-200 words and make necessary suggestions on what to do to make user improve: ";
       try {
         await generateAnswers(port, instruction + str)
       } catch (err) {
@@ -55,33 +55,21 @@ chrome.runtime.onConnect.addListener((port) => {
 });
 
 function handleActiveTabChange() {
-  // Query the currently active tab
   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-    // Access the active tab object
     var activeTab = tabs[0];
-
-    // Extract relevant information
-    // var tabUrl = activeTab.url;
     var tabTitle = activeTab.title;
-
     const currentTime = Date.now();
     if (!lastTitle) {
-      // If there was no previous tab title, initialize the start time
       lastTitle = tabTitle;
       startTime = currentTime;
     } else {
       const elapsedTime = (currentTime - startTime) / 1000;
       if (timeTracker.has(lastTitle)) {
-        // If the previous tab title is already in the timeTracker map,
-        // update the total time by adding the elapsed time
         const totalTime = timeTracker.get(lastTitle) + elapsedTime;
         timeTracker.set(lastTitle, totalTime);
       } else {
-        // If the previous tab title is not in the timeTracker map,
-        // create a new entry with the elapsed time
         timeTracker.set(lastTitle, elapsedTime);
       }
-      // Update the lastTitle and startTime for the new tab
       lastTitle = tabTitle;
       startTime = currentTime;
     }

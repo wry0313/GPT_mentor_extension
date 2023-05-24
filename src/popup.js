@@ -1,5 +1,5 @@
 import { generateAnswers } from './background'
-import '../static/popup.css';
+import '../static/tailwind.css'
 
 const port = chrome.runtime.connect();
 
