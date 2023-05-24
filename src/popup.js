@@ -3,9 +3,7 @@ import '../static/tailwind.css'
 
 const port = chrome.runtime.connect();
 
-console.log("hello")
-
-document.addEventListener('DOMContentLoaded', async function () {
+document.addEventListener('DOMContentLoaded', function () {
   // try{
   //   console.debug("hi", await getChatGPTAccessToken());
   // } catch(e) {
