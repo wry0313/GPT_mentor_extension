@@ -44,7 +44,11 @@ chrome.runtime.onConnect.addListener((port) => {
         await generateAnswers(port, instruction + toString(timeTracker))
       } catch (err) {
         console.debug(err);
-        port.postMessage({ error: err.message })
+        try {
+          port.postMessage({ error: err.message })
+        } catch (_) {
+          console.log('Error: Port is disconnected');
+        }
       }
     }
     else if (msg.action === 'clean time tracker') {
