@@ -10,6 +10,11 @@ export async function generateAnswers(port, question) {
   const token = await getChatGPTAccessToken()
   const provider = new ChatGPTProvider(token)
   const controller = new AbortController()
+  port.onDisconnect.addListener(() => {
+    console.debug("generate answer PORT DISCONNECTED")
+    controller.abort()
+    cleanup?.();
+  })
 
   const { cleanup } = await provider.generateAnswer({
     prompt: question,
@@ -19,39 +24,37 @@ export async function generateAnswers(port, question) {
         port.postMessage({ event: 'DONE' })
         return
       }
-      port.postMessage({ action: 'printPopup', text: event.data.text });
-      // console.debug("debug", event.data.text)
+      port.postMessage({ mentorOutput: event.data.text });
     },
-  })
-  port.onDisconnect.addListener(() => {
-    controller.abort()
-   cleanup?.();
   })
 }
 
+
 chrome.runtime.onConnect.addListener((port) => {
+  console.debug("PORT CONNECTED")
   port.onMessage.addListener(async (msg) => {
     console.debug('background received msg', msg)
-    if (msg.action === 'printMap') {
-      // Call the printMap function here
+    if (msg.action === 'print map') {
       printMap(timeTracker);
-      port.postMessage({ action: 'printPopup', text: toString(timeTracker) });
+      port.postMessage({ timeTracker: timeTracker });
     }
     else if (msg.action === 'generate') {
-      const str = toString(timeTracker);
-      console.debug("toString TimeTracker: ", str);
       const instruction = "in the perspective of a mentor or guru to allow the user to understand what the user's focus is on and what the user roughly accomplished today. limit to 100-200 words and make necessary suggestions on what to do to make user improve and also give a productivity rating out of 100: ";
       try {
-        await generateAnswers(port, instruction + str)
+        await generateAnswers(port, instruction + toString(timeTracker))
       } catch (err) {
-        console.log("ERROR: ", err);
+        console.debug(err);
+        port.postMessage({ error: err.message })
       }
     }
-    else if (msg.action === 'cleanTimeTracker') {
+    else if (msg.action === 'clean time tracker') {
       let count = cleanMap(timeTracker, msg.minTime)
-      port.postMessage({ action: 'printPopup', text: "map cleaned " + count + " items" });
+      port.postMessage({ mapCleanedText: "map cleaned " + count + " items" });
     }
   });
+  port.onDisconnect.addListener((port) => {
+    console.debug("PORT DISCONNECTED")
+  });  
 });
 
 function handleActiveTabChange() {
