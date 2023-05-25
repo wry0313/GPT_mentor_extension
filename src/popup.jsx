@@ -1,24 +1,29 @@
 import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom/client";
 import '../static/tailwind.css'
+import {toString } from "./background.js"
 
 function App() {
   const [mentorText, setMentorText] = useState("");
   const [mapCleanedText, setMapCleanedText] = useState("");
   const [error, setError] = useState("");
   const [showUsage, setShowUsage] = useState(false);
+  const [timeTracker, setTimeTracker] = useState(null);
   const [port, setPort] = useState(null);
 
   useEffect(() => {
     const backgroundPort = chrome.runtime.connect();
     setPort(backgroundPort);
     const listener = (msg) => {
+      setShowUsage(false);
+      backgroundPort.postMessage(msg);
       if (msg.mentorOutput) {
         setMentorText(msg.mentorOutput);
       } else if (msg.error) {
         setError(msg.error);
       } else if (msg.timeTracker) {
         setShowUsage(true);
+        setTimeTracker(msg.timeTracker);
       } else if (msg.mapCleanedText) {
         setMapCleanedText(msg.mapCleanedText);
       }
@@ -43,6 +48,8 @@ function App() {
           mapCleanedText={mapCleanedText}
           error={error}
           showUsage={showUsage}
+          timeTracker={timeTracker}
+          port={port}
         />
       </div>
     </>
@@ -54,16 +61,30 @@ function ContentWindow(props) {
     mentorText,
     mapCleanedText,
     error,
-    status,
-    showUsage
+    showUsage,
+    timeTracker,
+    port
   } = props;
 
   if (mentorText) {
-    return <>{props.mentorText}</>;
+    return <div className="text-center text-gray-700 text-lg" >{mentorText}</div>;
+  }
+
+  
+  if (showUsage && timeTracker) {
+    return (
+      <ul className="text-center text-gray-700 text-lg">
+      {timeTracker.map(([tab, time]) => (
+        <li key={tab}>
+          {tab} - {time} seconds
+        </li>
+      ))}
+    </ul>
+    )
   }
 
   return (
-    <div id="messageContainer" className="text-center text-gray-700 text-lg">
+    <div className="text-center text-gray-700 text-lg">
       Waiting for input....
     </div>
   );

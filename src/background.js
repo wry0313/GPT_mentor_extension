@@ -36,7 +36,7 @@ chrome.runtime.onConnect.addListener((port) => {
     console.debug('background received msg', msg)
     if (msg.action === 'print map') {
       printMap(timeTracker);
-      port.postMessage({ timeTracker: timeTracker });
+      port.postMessage({ timeTracker: Array.from(timeTracker)  });
     }
     else if (msg.action === 'generate') {
       const instruction = "in the perspective of a mentor or guru to allow the user to understand what the user's focus is on and what the user roughly accomplished today. limit to 100-200 words and make necessary suggestions on what to do to make user improve and also give a productivity rating out of 100: ";
@@ -100,7 +100,8 @@ function printMap(map) {
   });
 }
 
-function toString(map) {
+export function toString(map) {
+  console.log(map);
   const arr = [];
   map.forEach((value, key) => {
     arr.push(key + " used for " + value + " seconds");
@@ -110,7 +111,6 @@ function toString(map) {
   } else {
     return "no tab recorded";
   }
-  
 }
 
 
