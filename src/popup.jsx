@@ -27,6 +27,7 @@ function App() {
       } else if (msg.mapCleanedText) {
         setMapCleanedText(msg.mapCleanedText);
       } else if (msg.error) {
+        setShowWaiting(false);
         setError(msg.error);
       }
     };
@@ -41,8 +42,8 @@ function App() {
     <>
       <div className="w-96 flex flex-col items-center justify-center bg-gray-100">
         <h1 className="text-6xl font-bold text-center text-blue-500 mb-6 mt-2">
-          <span className="text-cyan-500">Daily</span>{" "}
-          <span className="text-blue-500">Guru</span>
+          <span className="text-cyan-500">Mentor</span>{""}
+          <span className="text-blue-500">GPT</span>
         </h1>
         <Buttons port={port} setShowWaiting={setShowWaiting} />
         <div> 
@@ -73,7 +74,7 @@ function ContentWindow(props) {
   }
 
   if (mentorText) {
-    return <div className="text-center text-gray-700 text-lg" >{mentorText}</div>;
+    return <div className="bg-gradient-to-r from-cyan-500 to-blue-500 m-2 rounded-lg p-1 text-center text-sm font-medium text-white" >{mentorText}</div>;
   }
 
   if (timeTracker) {
@@ -81,7 +82,7 @@ function ContentWindow(props) {
       timeTracker.length === 0 ? (
         <p className="text-center text-gray-700 text-lg">No tab recorded</p>
       ) : (
-        <ul className="list-disc list-inside text-center text-sm font-medium text-white">
+        <ul className="list-disc list-inside text-center text-sm font-medium text-white"> 
           {timeTracker.map(([tab, time]) => (
             <li className="bg-gradient-to-r from-cyan-500 to-blue-500 m-2 rounded-lg p-1" key={tab}>
               {tab} - {time} seconds
@@ -101,7 +102,7 @@ function ContentWindow(props) {
     )
   }
 
-  if (error === 'UNAUTHORIZED' || error === 'CLOUDFLARE') {
+  if (error) {
     return (
       <div className="text-center text-gray-700 text-lg">
          <p>

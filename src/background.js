@@ -22,6 +22,7 @@ export async function generateAnswers(port, question) {
     onEvent(event) {
       if (event.type === 'done') {
         port.postMessage({ event: 'DONE' })
+        console.log("done sent")
         return
       }
       port.postMessage({ mentorOutput: event.data.text });
