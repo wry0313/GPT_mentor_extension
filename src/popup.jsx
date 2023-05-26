@@ -4,10 +4,12 @@ import '../static/tailwind.css'
 import {toString } from "./background.js"
 
 function App() {
+  //  the state updates performed using useState hooks will not persist across browser extension restarts. 
+  // The state is stored in memory within the React component and will be reset to
+  // its initial values when the extension is reopened or the component is unmounted.
   const [mentorText, setMentorText] = useState("");
   const [mapCleanedText, setMapCleanedText] = useState("");
   const [error, setError] = useState("");
-  const [showUsage, setShowUsage] = useState(false);
   const [timeTracker, setTimeTracker] = useState(null);
   const [port, setPort] = useState(null);
 
@@ -15,17 +17,16 @@ function App() {
     const backgroundPort = chrome.runtime.connect();
     setPort(backgroundPort);
     const listener = (msg) => {
-      setShowUsage(false);
-      backgroundPort.postMessage(msg);
+      setTimeTracker(null);
+      setMapCleanedText("");
       if (msg.mentorOutput) {
         setMentorText(msg.mentorOutput);
-      } else if (msg.error) {
-        setError(msg.error);
       } else if (msg.timeTracker) {
-        setShowUsage(true);
         setTimeTracker(msg.timeTracker);
       } else if (msg.mapCleanedText) {
         setMapCleanedText(msg.mapCleanedText);
+      } else if (msg.error) {
+        setError(msg.error);
       }
     };
     backgroundPort.onMessage.addListener(listener);
@@ -37,20 +38,20 @@ function App() {
 
   return (
     <>
-      <div className="w-96 flex flex-col items-center justify-center h-screen bg-gray-100">
-        <h1 className="text-6xl font-bold text-center text-blue-500 mb-10">
+      <div className="w-96 flex flex-col items-center justify-center bg-gray-100">
+        <h1 className="text-6xl font-bold text-center text-blue-500 mb-6 mt-2">
           <span className="text-cyan-500">Daily</span>{" "}
           <span className="text-blue-500">Guru</span>
         </h1>
         <Buttons port={port} />
-        <ContentWindow
+        <div> 
+        <ContentWindow 
           mentorText={mentorText}
           mapCleanedText={mapCleanedText}
           error={error}
-          showUsage={showUsage}
           timeTracker={timeTracker}
-          port={port}
         />
+        </div>
       </div>
     </>
   );
@@ -61,25 +62,48 @@ function ContentWindow(props) {
     mentorText,
     mapCleanedText,
     error,
-    showUsage,
     timeTracker,
-    port
   } = props;
 
   if (mentorText) {
     return <div className="text-center text-gray-700 text-lg" >{mentorText}</div>;
   }
 
-  
-  if (showUsage && timeTracker) {
+  if (timeTracker) {
     return (
-      <ul className="text-center text-gray-700 text-lg">
-      {timeTracker.map(([tab, time]) => (
-        <li key={tab}>
-          {tab} - {time} seconds
-        </li>
-      ))}
-    </ul>
+      timeTracker.length === 0 ? (
+        <p className="text-center text-gray-700 text-lg">No tab recorded</p>
+      ) : (
+        <ul className="list-disc list-inside text-center text-sm font-medium text-white">
+          {timeTracker.map(([tab, time]) => (
+            <li className="bg-gradient-to-r from-cyan-500 to-blue-500 m-2 rounded-lg p-1" key={tab}>
+              {tab} - {time} seconds
+            </li>
+          ))}
+        </ul>
+      )
+    );
+  }  
+
+  if (mapCleanedText) {
+    return (
+      <div className="text-center text-gray-700 text-lg">
+        {mapCleanedText}
+    </div>
+
+    )
+  }
+
+  if (error === 'UNAUTHORIZED' || error === 'CLOUDFLARE') {
+    return (
+      <div className="text-center text-gray-700 text-lg">
+         <p>
+        Please login and pass Cloudflare check at{' '}
+        <a className="font-bold underline text-cyan-500" href="https://chat.openai.com" target="_blank" rel="noreferrer">
+          chat.openai.com
+        </a>
+        </p>
+    </div>
     )
   }
 
@@ -108,21 +132,21 @@ function Buttons(props) {
     <>
       <button
         onClick={handlePrint}
-        className="px-6 py-3 mb-4 text-sm font-medium text-white bg-gradient-to-r from-cyan-500 to-blue-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-cyan-300 dark:focus:ring-cyan-800 rounded-lg"
+        className="w-[50%] px-6 py-3 mb-4 text-sm font-medium text-white bg-gradient-to-r from-cyan-500 to-blue-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-cyan-300 dark:focus:ring-cyan-800 rounded-lg"
       >
         Print Website Usages
       </button>
       <button
-        onClick={handleGenerate}
-        className="px-6 py-3 mb-4 text-sm font-medium text-white bg-gradient-to-r from-cyan-500 to-blue-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-cyan-300 dark:focus:ring-cyan-800 rounded-lg"
+        onClick={handleClean}
+        className="w-[50%] px-6 py-3 mb-4 text-sm font-medium text-white bg-gradient-to-r from-cyan-500 to-blue-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-cyan-300 dark:focus:ring-cyan-800 rounded-lg"
       >
-        Generate Report
+        Only count tabs you stayed more than 10 seconds on
       </button>
       <button
-        onClick={handleClean}
-        className="px-6 py-3 mb-4 text-sm font-medium text-white bg-gradient-to-r from-cyan-500 to-blue-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-cyan-300 dark:focus:ring-cyan-800 rounded-lg"
+        onClick={handleGenerate}
+        className="w-[50%] px-6 py-3 mb-4 text-sm font-medium text-white bg-gradient-to-r from-cyan-500 to-blue-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-cyan-300 dark:focus:ring-cyan-800 rounded-lg"
       >
-        Record only 10 sec
+        Generate Report
       </button>
     </>
   );
@@ -132,27 +156,3 @@ document.addEventListener("DOMContentLoaded", function () {
   const root = ReactDOM.createRoot(document.getElementById("root"));
   root.render(<App />);
 });
-
-// port.onMessage.addListener(function (msg) {
-//   if (msg.action === 'printPopup') {
-//     if (messageContainer && msg.text) {
-//       messageContainer.innerHTML = '';
-//       const lines = msg.text.split('\n');
-//       lines.forEach(line => {
-//         if (line.trim() !== '') {
-//           const listItem = document.createElement('li'); // Create <li> element
-//           listItem.textContent = line; // Set the line text as the content of the <li>
-//           messageContainer.appendChild(listItem); // Append the <li> to the container
-//         } else {
-//           const lineBreak = document.createElement('br'); // Create <br> element
-//           messageContainer.appendChild(lineBreak); // Append the <br> to the container
-//         }
-//       });
-
-//     }
-//   }
-// })
-
-
-
-
