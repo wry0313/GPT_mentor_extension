@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom/client";
 import '../static/tailwind.css'
-import {toString } from "./background.js"
 
 function App() {
   //  the state updates performed using useState hooks will not persist across browser extension restarts. 
@@ -11,6 +10,7 @@ function App() {
   const [mapCleanedText, setMapCleanedText] = useState("");
   const [error, setError] = useState("");
   const [timeTracker, setTimeTracker] = useState(null);
+  const [showWaiting, setShowWaiting] = useState(false);
   const [port, setPort] = useState(null);
 
   useEffect(() => {
@@ -20,6 +20,7 @@ function App() {
       setTimeTracker(null);
       setMapCleanedText("");
       if (msg.mentorOutput) {
+        setShowWaiting(false);
         setMentorText(msg.mentorOutput);
       } else if (msg.timeTracker) {
         setTimeTracker(msg.timeTracker);
@@ -43,13 +44,14 @@ function App() {
           <span className="text-cyan-500">Daily</span>{" "}
           <span className="text-blue-500">Guru</span>
         </h1>
-        <Buttons port={port} />
+        <Buttons port={port} setShowWaiting={setShowWaiting} />
         <div> 
         <ContentWindow 
           mentorText={mentorText}
           mapCleanedText={mapCleanedText}
           error={error}
           timeTracker={timeTracker}
+          showWaiting={showWaiting}
         />
         </div>
       </div>
@@ -63,7 +65,12 @@ function ContentWindow(props) {
     mapCleanedText,
     error,
     timeTracker,
+    showWaiting
   } = props;
+
+  if (showWaiting) {
+    return <p className="text-[#b6b8ba] text-center animate-pulse mb-4">Waiting for ChatGPT response...</p>
+  }
 
   if (mentorText) {
     return <div className="text-center text-gray-700 text-lg" >{mentorText}</div>;
@@ -107,15 +114,12 @@ function ContentWindow(props) {
     )
   }
 
-  return (
-    <div className="text-center text-gray-700 text-lg">
-      Waiting for input....
-    </div>
-  );
+  return ;
 }
 
 function Buttons(props) {
   const port = props.port;
+  const setShowWaiting = props.setShowWaiting
   const handlePrint = () => {
     port.postMessage({ action: "print map" });
   };
@@ -126,6 +130,7 @@ function Buttons(props) {
 
   const handleGenerate = () => {
     port.postMessage({ action: "generate" });
+    setShowWaiting(true);
   };
 
   return (
