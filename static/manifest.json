@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "GPT Mentor",
   "description": "A Google Chrome extension that tracks user activity and generates daily reports",
-  "version": "1.1",
+  "version": "1.2",
   "permissions": [
     "tabs",
     "storage"
