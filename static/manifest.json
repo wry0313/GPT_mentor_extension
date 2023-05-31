@@ -1,10 +1,11 @@
 {
   "manifest_version": 3,
-  "name": "Activity Tracker",
+  "name": "GPT Mentor",
   "description": "A Google Chrome extension that tracks user activity and generates daily reports",
-  "version": "1.0",
+  "version": "1.1",
   "permissions": [
-    "tabs"
+    "tabs",
+    "storage"
   ],
   "background": {
     "service_worker": "background.js"

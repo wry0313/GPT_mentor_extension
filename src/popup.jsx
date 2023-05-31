@@ -23,8 +23,10 @@ function App() {
         setShowWaiting(false);
         setMentorText(msg.mentorOutput);
       } else if (msg.timeTracker) {
+        setMentorText('');
         setTimeTracker(msg.timeTracker);
       } else if (msg.mapCleanedText) {
+        setMentorText('');
         setMapCleanedText(msg.mapCleanedText);
       } else if (msg.error) {
         setShowWaiting(false);
@@ -126,13 +128,24 @@ function Buttons(props) {
   };
 
   const handleClean = () => {
-    port.postMessage({ action: "clean time tracker", minTime: 10 });
+    port.postMessage({ action: "clean time tracker", minTime: value });
   };
 
   const handleGenerate = () => {
     port.postMessage({ action: "generate" });
     setShowWaiting(true);
   };
+
+  const [value, setValue] = useState(0);
+
+  const handleScroll = (event) => {
+    const scrollValue = event.target.value;
+    setValue(parseInt(scrollValue, 10));
+  };
+
+  const handleReset = () => {
+    port.postMessage( {action: "reset"} );
+  }
 
   return (
     <>
@@ -146,13 +159,29 @@ function Buttons(props) {
         onClick={handleClean}
         className="w-[50%] px-6 py-3 mb-4 text-sm font-medium text-white bg-gradient-to-r from-cyan-500 to-blue-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-cyan-300 dark:focus:ring-cyan-800 rounded-lg"
       >
-        Only count tabs you stayed more than 10 seconds on
+        Only save tabs you stayed more than {value} seconds on
       </button>
+      <div>
+      <input
+        type="range"
+        min="0"
+        max="500"
+        value={value}
+        onChange={handleScroll}
+      />
+      <p>Value: {value}</p>
+    </div>
       <button
         onClick={handleGenerate}
         className="w-[50%] px-6 py-3 mb-4 text-sm font-medium text-white bg-gradient-to-r from-cyan-500 to-blue-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-cyan-300 dark:focus:ring-cyan-800 rounded-lg"
       >
         Generate Report
+      </button>
+      <button
+        onClick={handleReset}
+        className="w-[50%] px-6 py-3 mb-4 text-sm font-medium text-white bg-gradient-to-r from-cyan-500 to-blue-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-cyan-300 dark:focus:ring-cyan-800 rounded-lg"
+      >
+        Clear All Tab History
       </button>
     </>
   );

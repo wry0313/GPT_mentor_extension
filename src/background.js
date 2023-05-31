@@ -3,8 +3,20 @@ console.debug("background.js running");
 
 let lastTitle = null;
 let startTime = null;
-const timeTracker = new Map();
+let timeTracker = new Map();
 
+// Load existing time tracker data from local storage, if available
+chrome.storage.local.get('timeTracker', (result) => {
+  if (result.timeTracker) {
+    timeTracker = new Map(result.timeTracker);
+  }
+});
+
+// Save time tracker data to local storage whenever it is updated
+function saveTimeTracker() {
+  console.log("set")
+  chrome.storage.local.set({ 'timeTracker': Array.from(timeTracker) });
+}
 
 export async function generateAnswers(port, question) {
   const token = await getChatGPTAccessToken()
@@ -37,10 +49,10 @@ chrome.runtime.onConnect.addListener((port) => {
     console.debug('background received msg', msg)
     if (msg.action === 'print map') {
       printMap(timeTracker);
-      port.postMessage({ timeTracker: Array.from(timeTracker)  });
+      port.postMessage({ timeTracker: Array.from(timeTracker) });
     }
     else if (msg.action === 'generate') {
-      const instruction = "in the perspective of a mentor or guru to allow the user to understand what the user's focus is on and what the user roughly accomplished today. limit to 100-200 words and make necessary suggestions on what to do to make user improve and also give a productivity rating out of 100: ";
+      const instruction = "in the perspective of a mentor, help the user to understand what the user's focus is on and what the user roughly accomplished today. limit to 100-200 words and make necessary suggestions on what to do to make user improve and also give a productivity rating out of 100: ";
       try {
         await generateAnswers(port, instruction + toString(timeTracker))
       } catch (err) {
@@ -53,7 +65,11 @@ chrome.runtime.onConnect.addListener((port) => {
       }
     }
     else if (msg.action === 'clean time tracker') {
-      let count = cleanMap(timeTracker, msg.minTime)
+      let count = cleanMap(msg.minTime)
+      port.postMessage({ mapCleanedText: "map cleaned " + count + " items" });
+    } 
+    else if (msg.action === 'reset') {
+      let count = resetMap();
       port.postMessage({ mapCleanedText: "map cleaned " + count + " items" });
     }
   });
@@ -82,6 +98,7 @@ function handleActiveTabChange() {
       startTime = currentTime;
     }
   });
+  saveTimeTracker();
 }
 
 // Event listener for tab activation change
@@ -115,14 +132,22 @@ export function toString(map) {
 }
 
 
-function cleanMap(map, minTime) {
+function cleanMap(minTime) {
   let count = 0;
-  map.forEach((value, key) => {
+  timeTracker.forEach((value, key) => {
     if (value < minTime) {
       timeTracker.delete(key);
       count += 1;
     }
   });
+  saveTimeTracker();
+  return count;
+}
+
+function resetMap() {
+  let count = timeTracker.size
+  timeTracker = new Map();
+  saveTimeTracker();
   return count;
 }
 
